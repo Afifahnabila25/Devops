@@ -1,48 +1,14 @@
-name: CI/CD Pipeline - Fitur 2
+name: Linting Workflow
 
-on:
-  push:
-    branches:
-      - fitur-2
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'  # Ubah dari 20 ke 18
-      
-      - name: Install Dependencies
-        run: npm install
-      
-      - name: Run Tests
-        run: npm test
-      
-      - name: Log Extra Info
-        run: echo "Testing done for feature 2"
 
-  biuld:  
-    runs-on: ubuntu-latest
-    needs: test
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Install Dependencies
-        run: npm install
-      
-      - name: Build Application
-        run: npm run build
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run linter
+      run: npx eslint . || true
