@@ -1,0 +1,74 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Run Tests
+        run: npm test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Build Application
+        run: npm run build
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-build
+          path: build/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app-build
+          path: build/
+      
+      - name: Deploy to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: "your-heroku-app-name"
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+          heroku container:login
+          heroku container:push web --app $HEROKU_APP_NAME
+          heroku container:release web --app $HEROKU_APP_NAME
